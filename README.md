@@ -84,6 +84,7 @@ secret**. Add:
 | `ANTHROPIC_API_KEY` | ✅ | `sk-ant-...` |
 | `EMAIL_SENDER` | ✅ | the sending address, e.g. `you@gmail.com` |
 | `EMAIL_PASSWORD` | ✅ | the 16-char Gmail **App Password** |
+| `EMAIL_FROM` | optional | the From: address readers see, e.g. a Workspace alias like `newsletter@company.com`. Must be a verified "Send mail as" address of `EMAIL_SENDER`; defaults to `EMAIL_SENDER` |
 | `EMAIL_RECIPIENT` | ✅ | who receives it. **Comma-separate for several:** `me@x.com, mum@y.com` |
 | `SMTP_HOST` | optional | defaults to `smtp.gmail.com` |
 | `SMTP_PORT` | optional | defaults to `587` |

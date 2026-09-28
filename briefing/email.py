@@ -156,12 +156,19 @@ def _section_label(left, right) -> str:
 def _archive_url(link) -> str:
     return link.split("#")[0].rstrip("/") + "/archive.html" if link else ""
 
+def from_address() -> str:
+    """The address readers see in From: (and reply to). EMAIL_FROM lets a
+    Workspace alias like newsletter@company.com front the mail while the SMTP
+    login stays EMAIL_SENDER (Gmail honours a From: that is a verified "Send
+    mail as" alias of the logged-in account). Defaults to EMAIL_SENDER."""
+    return ((os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_SENDER")) or "").strip()
+
 def unsubscribe_link(value) -> str:
     """The cover's Unsubscribe href. `sender` means a mailto: to the sending
-    account (EMAIL_SENDER), so the address never has to sit in config.yaml."""
+    address (`from_address`), so the address never has to sit in config.yaml."""
     value = (value or "").strip()
     if value.lower() == "sender":
-        sender = (os.environ.get("EMAIL_SENDER") or "").strip()
+        sender = from_address()
         return f"mailto:{sender}?subject=Unsubscribe" if sender else ""
     return _safe_link(value)
 
@@ -216,10 +223,10 @@ def _cover_badge(tier) -> str:
 
 def feedback_address(value) -> str:
     """Where the cover's "Useful / Not for us" links send a vote: `sender`
-    means the sending account (EMAIL_SENDER), else a plain email address."""
+    means the sending address (`from_address`), else a plain email address."""
     value = (value or "").strip()
     if value.lower() == "sender":
-        value = (os.environ.get("EMAIL_SENDER") or "").strip()
+        value = from_address()
     return value if re.fullmatch(r"[^@\s<>\"']+@[^@\s<>\"']+\.[^@\s<>\"']+", value) else ""
 
 def _feedback(item, to) -> str:
@@ -498,8 +505,10 @@ def check_login() -> bool:
 def send_email(title, html, subject=None, from_name="") -> None:
     """`subject` overrides the default "<title> - <date>" subject line.
     `from_name` is the sender name the inbox shows (e.g. "The Edge");
-    blank shows the mailbox's own account name."""
+    blank shows the mailbox's own account name. The From: address is
+    `from_address()` (EMAIL_FROM, else the login account)."""
     sender, password, host, port = _smtp_settings()
+    sender_addr = from_address()
     recipients = _recipients()
     if not recipients:
         raise KeyError("EMAIL_RECIPIENT")
@@ -511,8 +520,8 @@ def send_email(title, html, subject=None, from_name="") -> None:
         for rcpt in recipients:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = formataddr((from_name, sender)) if from_name else sender
+            msg["From"] = formataddr((from_name, sender_addr)) if from_name else sender_addr
             msg["To"] = rcpt
             msg.attach(MIMEText(html, "html", "utf-8"))
-            server.sendmail(sender, [rcpt], msg.as_string())
+            server.sendmail(sender_addr, [rcpt], msg.as_string())
     print(f"[email] sent to {len(recipients)} recipient(s)", flush=True)

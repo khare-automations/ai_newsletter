@@ -72,6 +72,8 @@ jobs:
           ANTHROPIC_WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}   # only for keys not scoped to one workspace
           EMAIL_SENDER:      ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD:    ${{ secrets.EMAIL_PASSWORD }}
+          # optional From: address (a "Send mail as" alias of EMAIL_SENDER); blank = EMAIL_SENDER
+          EMAIL_FROM:        ${{ secrets.EMAIL_FROM }}
           # one address or a comma-separated list; a preview goes only to preview_to
           EMAIL_RECIPIENT:   ${{ inputs.preview_to || secrets.EMAIL_RECIPIENT }}
           SMTP_HOST:         ${{ secrets.SMTP_HOST }}
