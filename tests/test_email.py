@@ -270,6 +270,27 @@ def test_empty_smtp_env_falls_back_to_gmail_defaults(monkeypatch):
     assert smtp.call_args.args == ("smtp.gmail.com", 587)
 
 
+def test_email_from_alias_fronts_the_mail_but_login_stays_the_account(monkeypatch):
+    from unittest.mock import patch, MagicMock
+    from briefing.email import send_email, from_address, unsubscribe_link, feedback_address
+    for k, v in {"EMAIL_SENDER": "me@x.com", "EMAIL_PASSWORD": "pw", "EMAIL_RECIPIENT": "a@x.com",
+                 "EMAIL_FROM": "newsletter@x.com"}.items():
+        monkeypatch.setenv(k, v)
+    assert from_address() == "newsletter@x.com"
+    assert unsubscribe_link("sender") == "mailto:newsletter@x.com?subject=Unsubscribe"
+    assert feedback_address("sender") == "newsletter@x.com"
+    server = MagicMock()
+    with patch("briefing.email.smtplib.SMTP") as smtp:
+        smtp.return_value.__enter__.return_value = server
+        send_email("B", "<p/>", from_name="The Edge")
+    server.login.assert_called_once_with("me@x.com", "pw")
+    envelope_from, rcpts, raw = server.sendmail.call_args.args
+    assert envelope_from == "newsletter@x.com" and rcpts == ["a@x.com"]
+    assert "From: The Edge <newsletter@x.com>" in raw
+    monkeypatch.setenv("EMAIL_FROM", "")            # unset secret arrives as ""
+    assert from_address() == "me@x.com"
+
+
 def test_check_login_skips_without_settings_and_logs_in_with_them(monkeypatch):
     from unittest.mock import patch, MagicMock
     from briefing.email import check_login
