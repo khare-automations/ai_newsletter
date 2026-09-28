@@ -298,7 +298,11 @@ The edition `label` is appended to the title and used in the archive filename.
 It then runs on the schedule in `.github/workflows/daily.yml` (default 06:23
 UTC, landing around 07:00). Cron is in **UTC** — convert from your timezone.
 GitHub starts on-the-hour crons late (often 30-90 min), so keep an off-hour
-minute and schedule a little before the time you want the email. Each run's
+minute and schedule a little before the time you want the email. For a small
+repo GitHub can also delay a cron by hours or drop it entirely, so this repo's
+real trigger is a Claude Code Routine that dispatches the workflow at 06:13
+Zurich on weekdays; the GitHub crons only run as backups if `history.json`
+shows nothing went out yet (`BRIEFING_ONLY_IF_UNSENT`). Each run's
 summary page lists every source with its item count, and failed sources show
 up as warnings. The **Tests** workflow runs `pytest` on every PR; the optional
 **Claude PR Review** workflow needs a `CLAUDE_CODE_OAUTH_TOKEN` secret and

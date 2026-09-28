@@ -49,9 +49,12 @@ render (email + optional web edition).
   All markup is server-rendered and works without JS; the inline JS only adds read state, gist
   toggles, smooth jumps and the archive filters.
 - **editions** (`editions.py`): AM/PM editions chosen by local hour; match the cron in `daily.yml`.
-- **Runs** (`daily.yml` -> `main.py` -> `pipeline.run`): 06:13 Zurich on weekdays, plus a 07:15
-  backup that runs only if `history.json` `last_sent` isn't today (GitHub drops scheduled runs at
-  times). A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
+- **Runs** (`daily.yml` -> `main.py` -> `pipeline.run`): a Claude Code Routine ("AI newsletter daily
+  briefing", 06:13 Zurich on weekdays) checks `history.json` `last_sent` and dispatches the workflow
+  (`workflow_dispatch`, `edition: auto`). GitHub's own cron is unreliable for this repo (hours late or
+  dropped), so its 06:13 and 07:15 schedules are backups only: every `schedule` event sets
+  `BRIEFING_ONLY_IF_UNSENT` and skips if `last_sent` is already today.
+  A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
   history or web edition) and `edition` (auto / daily / weekly, which overrides the weekday).
 - **schedule** (`weekly.py`): `skip_weekends` sends nothing Sat/Sun (checked before login or any
   fetch; the cron in `daily.yml` is weekdays-only too). On `weekly_day` (Friday) the edition is the

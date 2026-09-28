@@ -1,16 +1,18 @@
 name: Daily Briefing
 on:
+  # The real 06:13 Zurich weekday trigger is a Claude Code Routine that dispatches
+  # this workflow (workflow_dispatch, edition=auto) after checking history.json.
+  # GitHub's own cron is only a backup: it fires hours late or not at all for a
+  # small repo (Mon 28 Sep 2026 it never fired), so every schedule below runs
+  # only if history.json shows no edition went out today.
   schedule:
-    # Target: the email in the inbox at 06:30 Zurich, Monday to Friday (Friday is
-    # the Week in 5; config.yaml schedule.skip_weekends also guards weekends).
-    # GitHub cron is UTC only and starts jobs a few minutes late (much more on
-    # the hour), and a run takes ~5 min, so the job starts at 06:13 local.
-    # Zurich switches between CEST (UTC+2) and CET (UTC+1), so both UTC times
-    # are listed and the `season` job skips the one that is wrong today.
+    # Backup 1, 06:13 Zurich: the same slot as the Routine, in case it failed.
+    # GitHub cron is UTC only; Zurich switches between CEST (UTC+2) and CET
+    # (UTC+1), so both UTC times are listed and the `season` job skips the one
+    # that is wrong today.
     - cron: '13 4 * * 1-5'   # 06:13 Zurich in summer (CEST)
     - cron: '13 5 * * 1-5'   # 06:13 Zurich in winter (CET)
-    # Backup, 07:15 Zurich: GitHub sometimes drops a scheduled run. This one
-    # sends only if history.json shows no edition went out today.
+    # Backup 2, 07:15 Zurich.
     - cron: '15 5 * * 1-5'   # 07:15 Zurich in summer (CEST)
     - cron: '15 6 * * 1-5'   # 07:15 Zurich in winter (CET)
   workflow_dispatch:        # lets you trigger a run by hand from the Actions tab
@@ -24,7 +26,7 @@ on:
         type: choice
         options: [auto, daily, weekly]
         default: auto
-# One run at a time: the backup waits for a late main run, then sees it sent.
+# One run at a time: a late backup waits for the running edition, then sees it sent.
 concurrency:
   group: daily-briefing
   cancel-in-progress: false
@@ -79,7 +81,8 @@ jobs:
           YOUTUBE_API_KEY:   ${{ secrets.YOUTUBE_API_KEY }}
           BRIEFING_EDITION:  ${{ inputs.edition || 'auto' }}
           BRIEFING_PREVIEW:  ${{ inputs.preview_to && '1' || '' }}
-          BRIEFING_ONLY_IF_UNSENT: ${{ (github.event.schedule == '15 5 * * 1-5' || github.event.schedule == '15 6 * * 1-5') && '1' || '' }}
+          # every cron is a backup: skip if history.json says today's edition went out
+          BRIEFING_ONLY_IF_UNSENT: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: python main.py
 
       # Commit history.json (so nothing repeats) and, if the web edition is
