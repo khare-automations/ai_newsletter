@@ -50,8 +50,8 @@ render (email + optional web edition).
   toggles, smooth jumps and the archive filters.
 - **editions** (`editions.py`): AM/PM editions chosen by local hour; match the cron in `daily.yml`.
 - **Runs** (`daily.yml` -> `main.py` -> `pipeline.run`): 06:13 Zurich on weekdays, plus a 07:15
-  backup that runs only if `history.json` `last_sent` isn't today (GitHub drops scheduled runs at
-  times). A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
+  backup (GitHub drops scheduled runs at times). Every scheduled run sends only if `history.json`
+  `last_sent` isn't today (GitHub also starts runs hours late); a manual run always sends. A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
   history or web edition) and `edition` (auto / daily / weekly, which overrides the weekday).
 - **schedule** (`weekly.py`): `skip_weekends` sends nothing Sat/Sun (checked before login or any
   fetch; the cron in `daily.yml` is weekdays-only too). On `weekly_day` (Friday) the edition is the

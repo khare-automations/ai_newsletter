@@ -9,8 +9,10 @@ on:
     # are listed and the `season` job skips the one that is wrong today.
     - cron: '13 4 * * 1-5'   # 06:13 Zurich in summer (CEST)
     - cron: '13 5 * * 1-5'   # 06:13 Zurich in winter (CET)
-    # Backup, 07:15 Zurich: GitHub sometimes drops a scheduled run. This one
-    # sends only if history.json shows no edition went out today.
+    # Backup, 07:15 Zurich: GitHub sometimes drops a scheduled run. Every
+    # scheduled run (main or backup) sends only if history.json shows no
+    # edition went out today: GitHub can also start one hours late, after a
+    # manual run or the backup has already sent it.
     - cron: '15 5 * * 1-5'   # 07:15 Zurich in summer (CEST)
     - cron: '15 6 * * 1-5'   # 07:15 Zurich in winter (CET)
   workflow_dispatch:        # lets you trigger a run by hand from the Actions tab
@@ -81,7 +83,8 @@ jobs:
           YOUTUBE_API_KEY:   ${{ secrets.YOUTUBE_API_KEY }}
           BRIEFING_EDITION:  ${{ inputs.edition || 'auto' }}
           BRIEFING_PREVIEW:  ${{ inputs.preview_to && '1' || '' }}
-          BRIEFING_ONLY_IF_UNSENT: ${{ (github.event.schedule == '15 5 * * 1-5' || github.event.schedule == '15 6 * * 1-5') && '1' || '' }}
+          # scheduled runs never send a second edition the same day; a manual run always sends
+          BRIEFING_ONLY_IF_UNSENT: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: python main.py
 
       # Commit history.json (so nothing repeats) and, if the web edition is
