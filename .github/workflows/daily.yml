@@ -114,7 +114,7 @@ jobs:
         if: success() && !inputs.preview_to
         continue-on-error: true
         env:
-          EDITION_URL: "https://clairechabot.github.io/ai_newsletter/"
+          EDITION_URL: "https://khare-automations.github.io/ai_newsletter/"
           EDITION_DEPLOY_TOKEN: ${{ secrets.EDITION_DEPLOY_TOKEN }}
           EDITION_REPO: ""   # same as above; only needed to kick a rebuild
         run: |
