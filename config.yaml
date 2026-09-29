@@ -112,7 +112,7 @@ summary: { enabled: true }
 # Preview images: each story's og:image (what link previews show), hotlinked.
 images: { enabled: true }
 
-web: { enabled: true, output_dir: "docs", edition_url: "https://clairechabot.github.io/ai_newsletter/" }
+web: { enabled: true, output_dir: "docs", edition_url: "https://khare-automations.github.io/ai_newsletter/" }
 
 # Fixed archive topics: every story gets one (in the priority call) so the
 # Archive can filter by category across days. Stories that fit none show as "Other".

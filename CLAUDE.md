@@ -48,13 +48,14 @@ render (email + optional web edition).
   fields still load (no topic = "Other"). Served by GitHub Pages (`/docs`).
   All markup is server-rendered and works without JS; the inline JS only adds read state, gist
   toggles, smooth jumps and the archive filters.
-- **editions** (`editions.py`): AM/PM editions chosen by local hour; match the cron in `daily.yml`.
-- **Runs** (`daily.yml` -> `main.py` -> `pipeline.run`): 06:13 Zurich on weekdays, plus a 07:15
-  backup that runs only if `history.json` `last_sent` isn't today (GitHub drops scheduled runs at
-  times). A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
+- **editions** (`editions.py`): AM/PM editions chosen by local hour; match the Claude routine's schedule.
+- **Runs** (`daily.yml` -> `main.py` -> `pipeline.run`): no GitHub cron. A Claude routine
+  dispatches the workflow at 06:13 Zurich on weekdays if `history.json` `last_sent` isn't today
+  (GitHub cron started runs hours late and double-sent). `BRIEFING_ONLY_IF_UNSENT` makes
+  `pipeline.run` skip when `last_sent` is today. A manual run can set `preview_to` (email only that address, "[Preview]" subject, save no
   history or web edition) and `edition` (auto / daily / weekly, which overrides the weekday).
 - **schedule** (`weekly.py`): `skip_weekends` sends nothing Sat/Sun (checked before login or any
-  fetch; the cron in `daily.yml` is weekdays-only too). On `weekly_day` (Friday) the edition is the
+  fetch; the Claude routine is weekdays-only too). On `weekly_day` (Friday) the edition is the
   "Week in 5": `week_candidates` reads this week's Read first/today rows back from the archive plus
   today's reading order, one Claude call (`pick_week`) picks `weekly_picks` and writes "The week in
   30 seconds", and `weekly_themes` puts the picks in a `pinned` theme that `triage` uses as the whole
