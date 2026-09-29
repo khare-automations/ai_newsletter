@@ -2,8 +2,8 @@
 
 Turn a list of web / news / RSS / YouTube sources into one filtered, themed
 briefing — delivered as an **email**, and (optionally) published as a browsable
-**web edition** with a permanent **archive** on GitHub Pages. It runs itself on
-a schedule via GitHub Actions, curates with Claude, and remembers what it has
+**web edition** with a permanent **archive** on GitHub Pages. It runs itself every
+weekday (a Claude Code Routine starts the GitHub Actions workflow), curates with Claude, and remembers what it has
 already shown so nothing repeats.
 
 This repo is a **template**. The headline `config.yaml` ships a plain themed
@@ -263,7 +263,8 @@ marks", "open with the weather", "sign off with a seasonal note").
 ### Step 10 — (Optional) Twice-daily editions
 
 To run a Morning and an Evening edition, list them in `config.yaml` (the local
-hour picks which one runs) and add the matching cron in the workflow:
+hour picks which one runs) and start the workflow at both times: a second
+Claude Code Routine, or a GitHub cron (see Step 12 for why this repo avoids them):
 
 ```yaml
 editions:
@@ -296,10 +297,16 @@ The edition `label` is appended to the title and used in the archive filename.
 
 ### Step 12 — Let it run
 
-It then runs on the schedule in `.github/workflows/daily.yml` (default 06:23
-UTC, landing around 07:00). Cron is in **UTC** — convert from your timezone.
-GitHub starts on-the-hour crons late (often 30-90 min), so keep an off-hour
-minute and schedule a little before the time you want the email. Each run's
+`.github/workflows/daily.yml` has no GitHub cron: GitHub delayed this repo's
+scheduled runs by hours or dropped them, and one late run sent a second
+edition. Instead a Claude Code Routine ("AI newsletter daily briefing", 06:13
+Zurich on weekdays) reads `history.json` on `main` and, if `last_sent` isn't
+today, dispatches the workflow (`workflow_dispatch`, `edition: auto`). You can
+also run it by hand from the Actions tab. If you'd rather use GitHub cron in
+your own copy, add a `schedule:` block (cron is in **UTC**, and GitHub starts
+on-the-hour crons late, so pick an off-hour minute a little early) and set
+`BRIEFING_ONLY_IF_UNSENT: '1'` for scheduled runs so a late one can't send
+twice. Each run's
 summary page lists every source with its item count, and failed sources show
 up as warnings. The **Tests** workflow runs `pytest` on every PR; the optional
 **Claude PR Review** workflow needs a `CLAUDE_CODE_OAUTH_TOKEN` secret and
@@ -354,7 +361,7 @@ briefing/
     _fetch.py               hardened HTTP (browser UA, retries, relay fallback)
     rss.py scrape.py claude_fetch.py youtube.py   the built-in source types
     sites/                  bespoke per-site parsers (_example.py, seedcamp.py)
-.github/workflows/daily.yml the schedule + publish/commit steps
+.github/workflows/daily.yml the run + publish/commit steps
 docs/                       the published web edition + archive (when enabled)
 ```
 
