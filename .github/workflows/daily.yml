@@ -1,21 +1,10 @@
 name: Daily Briefing
 on:
-  schedule:
-    # Target: the email in the inbox at 06:30 Zurich, Monday to Friday (Friday is
-    # the Week in 5; config.yaml schedule.skip_weekends also guards weekends).
-    # GitHub cron is UTC only and starts jobs a few minutes late (much more on
-    # the hour), and a run takes ~5 min, so the job starts at 06:13 local.
-    # Zurich switches between CEST (UTC+2) and CET (UTC+1), so both UTC times
-    # are listed and the `season` job skips the one that is wrong today.
-    - cron: '13 4 * * 1-5'   # 06:13 Zurich in summer (CEST)
-    - cron: '13 5 * * 1-5'   # 06:13 Zurich in winter (CET)
-    # Backup, 07:15 Zurich: GitHub sometimes drops a scheduled run. Every
-    # scheduled run (main or backup) sends only if history.json shows no
-    # edition went out today: GitHub can also start one hours late, after a
-    # manual run or the backup has already sent it.
-    - cron: '15 5 * * 1-5'   # 07:15 Zurich in summer (CEST)
-    - cron: '15 6 * * 1-5'   # 07:15 Zurich in winter (CET)
-  workflow_dispatch:        # lets you trigger a run by hand from the Actions tab
+  # No GitHub cron: a Claude routine ("AI newsletter daily briefing", 06:13
+  # Zurich on weekdays) dispatches this workflow once it has checked that
+  # history.json shows no edition sent today. GitHub cron can start hours
+  # late, which sent a second edition on 2026-09-29.
+  workflow_dispatch:        # the Claude routine, or a run by hand from the Actions tab
     inputs:
       preview_to:
         description: "Preview: send ONLY to this address, save nothing (leave blank for a real edition)"
@@ -26,33 +15,12 @@ on:
         type: choice
         options: [auto, daily, weekly]
         default: auto
-# One run at a time: the backup waits for a late main run, then sees it sent.
+# One run at a time.
 concurrency:
   group: daily-briefing
   cancel-in-progress: false
 jobs:
-  # Which of the two schedules is right today? (A manual run always goes ahead.)
-  season:
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - id: check
-        env:
-          SCHEDULE: ${{ github.event.schedule }}
-        run: |
-          zone=$(TZ=Europe/Zurich date +%Z)   # CEST in summer, CET in winter
-          case "$SCHEDULE|$zone" in
-            "13 4 * * 1-5|CET"|"15 5 * * 1-5|CET"|"13 5 * * 1-5|CEST"|"15 6 * * 1-5|CEST")
-              echo "Schedule '$SCHEDULE' belongs to the other season (Zurich is on $zone); skipping."
-              echo "run=false" >> "$GITHUB_OUTPUT" ;;
-            *)
-              echo "Running (schedule '${SCHEDULE:-manual}', Zurich is on $zone)."
-              echo "run=true" >> "$GITHUB_OUTPUT" ;;
-          esac
   run:
-    needs: season
-    if: needs.season.outputs.run == 'true'
     runs-on: ubuntu-latest
     env:
       TZ: Europe/Zurich     # datelines, edition filenames and AM/PM picks use local time
@@ -83,8 +51,6 @@ jobs:
           YOUTUBE_API_KEY:   ${{ secrets.YOUTUBE_API_KEY }}
           BRIEFING_EDITION:  ${{ inputs.edition || 'auto' }}
           BRIEFING_PREVIEW:  ${{ inputs.preview_to && '1' || '' }}
-          # scheduled runs never send a second edition the same day; a manual run always sends
-          BRIEFING_ONLY_IF_UNSENT: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: python main.py
 
       # Commit history.json (so nothing repeats) and, if the web edition is

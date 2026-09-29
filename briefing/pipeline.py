@@ -26,7 +26,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
     email with a "[Preview]" subject, ignores which stories were already sent,
     and saves nothing: no history, no web edition, so the real edition still
     has every story. `only_if_unsent` is
-    set on every scheduled run: skip if history says an edition already went out today.
+    for a run that must not double-send: skip if history says an edition already went out today.
     """
     now = now or datetime.now()  # local time decides which edition (AM/PM) runs
     today = now.strftime("%Y-%m-%d")
@@ -36,7 +36,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
         print(f"[pipeline] {now:%A}: no edition at weekends (schedule.skip_weekends)", flush=True)
         return
     if only_if_unsent and load_history(history_path).get("last_sent") == today:
-        print(f"[pipeline] today's edition already went out; scheduled run not needed", flush=True)
+        print(f"[pipeline] today's edition already went out; run not needed", flush=True)
         return
     weekly = is_weekly(cfg.schedule, now) if edition == "auto" else edition == "weekly"
     slot = pick_edition(cfg.editions, now.hour)
@@ -115,7 +115,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
         return
 
     mark_seen(hist, fresh)
-    hist["last_sent"] = today  # scheduled runs check this
+    hist["last_sent"] = today  # only_if_unsent (and the Claude routine) check this
     remember_order(hist, [display_title(i) for i in triage(themes)[0]], today)
     if greeting:
         hist["recent_greetings"] = (hist.get("recent_greetings", []) + [greeting])[-RECENT_KEEP:]
