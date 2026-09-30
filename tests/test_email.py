@@ -360,3 +360,21 @@ def test_feedback_links_are_mailto_votes_per_story(monkeypatch):
     skim = html.split("Skim if you have time")[1]
     assert "Worth it?" not in skim
     assert "Worth it?" not in build_html_email("E", _triage_themes(), edition_url="https://s/", cover=True)
+
+EXPLAINER = {"concept": "M<C>P", "why": "Story 3 <runs> on it.", "ref": {"stories": [3]},
+             "steps": [{"icon": "📦", "text": "Apps <expose> tools"}, {"icon": "🔌", "text": "One plug"},
+                       {"icon": "🤖", "text": "Agent calls any tool"}]}
+
+def test_cover_explainer_follows_the_reading_order():
+    html = build_html_email("E", _triage_themes(), edition_url="https://s/ed#x", cover=True,
+                            explainer=EXPLAINER)
+    assert html.index("Your reading order") < html.index("Explain it simply") < html.index("Skim if")
+    assert ">M&lt;C&gt;P</td>" in html and "Apps &lt;expose&gt; tools" in html
+    assert "Why today:</b> Story 3 &lt;runs&gt; on it." in html
+    assert 'href="https://s/ed#order-2"' in html and "Story 3 &rarr;</a>" in html
+    no_link = build_html_email("E", _triage_themes(), edition_url="", cover=True, explainer=EXPLAINER)
+    assert "Explain it simply" in no_link and "#order-2" not in no_link
+
+def test_explainer_only_in_the_cover():
+    assert "Explain it simply" not in build_html_email("E", _triage_themes(), cover=True)
+    assert "Explain it simply" not in build_html_email("E", _triage_themes(), explainer=EXPLAINER)

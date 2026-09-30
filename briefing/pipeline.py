@@ -8,6 +8,7 @@ from briefing.enrich import group_into_themes
 from briefing.priority import prioritize, order_themes, reading_list, triage, display_title
 from briefing.images import add_images
 from briefing.summary import summarize
+from briefing.explain import explain, RECENT_KEEP as EXPLAIN_KEEP
 from briefing.voice import compose_greeting, RECENT_KEEP
 from briefing.editions import pick_edition
 from briefing.email import build_html_email, send_email, top_pick_subject, check_login, cover_preheader
@@ -77,6 +78,8 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
             weekly = False
     if not weekly:
         summary = summarize(themes, cfg.summary, profile=cfg.priority)  # optional: "The day in 30 seconds"
+    # optional: "Explain it simply", one concept from the reading order in emoji steps
+    explainer = explain(themes, cfg.explain, recent=hist.get("recent_explainers"))
     greeting = compose_greeting(cfg.voice, themes, recent=hist.get("recent_greetings"))
     org = cfg.priority.get("org", "") if cfg.priority.get("enabled") else ""
 
@@ -90,7 +93,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
                                  summary=summary, org=org,
                                  reading_images=cfg.web.get("reading_images", "first"),
                                  skim_expanded=bool(cfg.web.get("skim_expanded", False)),
-                                 weekly=weekly)
+                                 weekly=weekly, explainer=explainer)
         paths = save_edition(out_dir, page, now.strftime("%Y-%m-%d"), slot["key"])
         build_archive_index(out_dir, site_title=cfg.title, topics=cfg.topics())
         print(f"[pipeline] web edition -> {paths['edition']}", flush=True)
@@ -105,7 +108,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
                                        else (greeting or lead)),
                             summary=summary, org=org, now=now,
                             unsubscribe=cfg.email_unsubscribe, address=cfg.email_address,
-                            feedback=cfg.email_feedback, weekly=weekly)
+                            feedback=cfg.email_feedback, weekly=weekly, explainer=explainer)
     subject = top_pick_subject(title, themes) if cfg.email_subject == "top_pick" else None
     if preview:
         subject = "[Preview] " + (subject or f"{title} - {now:%b %d, %Y}")
@@ -119,4 +122,7 @@ def run(cfg, history_path="history.json", now=None, *, edition="auto", preview=F
     remember_order(hist, [display_title(i) for i in triage(themes)[0]], today)
     if greeting:
         hist["recent_greetings"] = (hist.get("recent_greetings", []) + [greeting])[-RECENT_KEEP:]
+    if explainer:
+        hist["recent_explainers"] = (hist.get("recent_explainers", [])
+                                     + [explainer["concept"]])[-EXPLAIN_KEEP:]
     save_history(history_path, hist)

@@ -35,6 +35,7 @@ class Config:
     priority: dict = field(default_factory=dict)    # reading-priority labels (priority.py)
     images: dict = field(default_factory=dict)      # preview images (images.py)
     summary: dict = field(default_factory=dict)     # "The day in 30 seconds" (summary.py)
+    explain: dict = field(default_factory=dict)     # "Explain it simply" (explain.py)
     web: dict = field(default_factory=dict)          # web edition + archive (web.py)
     editions: list = field(default_factory=list)     # AM/PM schedule (editions.py)
     archive: dict = field(default_factory=dict)      # archive topics (web.py archive)
@@ -95,6 +96,7 @@ def load_config(path: str) -> Config:
         priority=raw.get("priority", {}) or {},
         images=raw.get("images", {}) or {},
         summary=raw.get("summary", {}) or {},
+        explain=raw.get("explain", {}) or {},
         web=raw.get("web", {}) or {},
         editions=raw.get("editions", []) or [],
         archive=raw.get("archive", {}) or {},

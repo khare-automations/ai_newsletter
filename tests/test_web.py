@@ -237,3 +237,25 @@ def test_archive_has_topics_day_takes_and_reads_old_editions(tmp_path):
     rows = json.loads(body.split('<script id="archive-data" type="application/json">')[1].split("</script>")[0])
     assert {"Old one", "Marketplace"} <= {r["title"] for r in rows}
     assert "\\u003c40%>" in body or "\u003c40%>" in body  # takes escaped inside the script block
+
+EXPLAINER = {"concept": "M<C>P", "why": "Story 3 <runs> on it.", "ref": {"stories": [3]},
+             "steps": [{"icon": "📦", "text": "Apps <expose> tools"}, {"icon": "🔌", "text": "One plug"},
+                       {"icon": "🤖", "text": "Agent calls any tool"}]}
+
+def test_explainer_sits_between_order_and_skim_and_is_escaped():
+    body = _body(build_web_edition("E", _triage_themes(), explainer=EXPLAINER,
+                                   edition_date="2026-09-24", slot_key="daily"))
+    page = body.split('<script id="edition-data"')[0]
+    assert page.index('id="order"') < page.index('id="explain"') < page.index('id="skim"')
+    assert "Explain it simply<span>M&lt;C&gt;P</span>" in page
+    assert "Apps &lt;expose&gt; tools" in page and "<expose>" not in page
+    assert '<p class="why-line"><b>Why today:</b> Story 3 &lt;runs&gt; on it.</p>' in page
+    assert '<a class="jump go" href="#order-2">→ Story 3</a>' in page
+    assert page.count('<span class="sn">Step') == 3
+    assert '<a class="tj go" href="#explain">' in body
+    assert '<script id="edition-explainer" type="application/json">' in body
+
+def test_no_explainer_no_section():
+    body = _body(build_web_edition("E", _triage_themes(), edition_date="2026-09-24"))
+    assert 'id="explain"' not in body and "edition-explainer" not in body
+    assert 'href="#explain"' not in body
