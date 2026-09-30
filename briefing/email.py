@@ -11,6 +11,7 @@ from urllib.parse import quote
 from briefing.theme import css, PALETTE
 from briefing.priority import (LABELS, reading_list, triage, all_items, read_minutes,
                                display_title)
+from briefing.summary import ref_target
 
 SKIM_MAX = 3         # headlines per section in the cover email; the rest are on the web
 PREHEADER_MAX = 140  # characters of inbox preview
@@ -304,6 +305,31 @@ def _cover_skim(skim, edition_url) -> str:
                     f'&rarr;</a></td></tr>')
     return out
 
+def _cover_explain(explainer, edition_url) -> str:
+    """"Explain it simply" (explain.py): the concept's emoji steps, one per
+    line (email clients don't hold a row of cards), the why line and a link
+    to the story that uses it on the web edition."""
+    if not explainer or not explainer.get("steps"):
+        return ""
+    steps = "".join(
+        f'<tr><td width="40" valign="top" style="padding:6px 0;font-size:22px;line-height:26px;{_LH}">'
+        f'{escape(st["icon"])}</td><td valign="middle" style="padding:6px 0;{_F}font-size:15px;'
+        f'font-weight:bold;color:{_P["ink"]};line-height:22px;{_LH}">{escape(st["text"])}</td></tr>'
+        for st in explainer["steps"])
+    why = explainer.get("why")
+    why_html = (f'<div style="{_F}font-size:14px;color:{_P["ink"]};line-height:20px;{_LH}'
+                f'padding-top:10px;"><b style="color:{_P["cobalt"]};">Why today:</b> {escape(why)}</div>'
+                if why else "")
+    link = _safe_url(edition_url).split("#")[0]
+    label, target = ref_target(explainer.get("ref"), [])
+    jump = (f'<div style="{_F}font-size:13px;padding-top:8px;">'
+            f'<a href="{escape(f"{link}#{target}", quote=True)}" style="color:{_P["cobalt"]};'
+            f'text-decoration:underline;">{escape(label)} &rarr;</a></div>' if link and target else "")
+    return (_section_label("Explain it simply", escape(explainer["concept"]))
+            + f'<tr><td style="padding:14px 0 0 0;"><table {_T} style="background:{_P["white"]};'
+            f'border:2px solid {_P["black"]};"><tr><td style="padding:12px 18px 14px 18px;">'
+            f'<table {_T}>{steps}</table>{why_html}{jump}</td></tr></table></td></tr>')
+
 def _followup(item) -> str:
     """"Follow-up · " before the source of a story that only updates one from
     an earlier reading order (priority.py)."""
@@ -326,7 +352,7 @@ def _cover_footer(title, n_sources, org, link, unsubscribe, address) -> str:
             f'line-height:19px;{_LH}">{"<br>".join(lines)}</td></tr>')
 
 def _cover_email(title, themes, *, greeting, edition_url, preheader, summary, org, now,
-                 unsubscribe, address, feedback="", weekly=False) -> str:
+                 unsubscribe, address, feedback="", weekly=False, explainer=None) -> str:
     order, skim = triage(themes)
     n_skim = sum(len(its) for _, its in skim)
     n_sources = len({i.source for i in all_items(themes)})
@@ -342,6 +368,7 @@ def _cover_email(title, themes, *, greeting, edition_url, preheader, summary, or
                                f'{_plural(len(order), "story", "stories")} &middot; ~{minutes} min')
         to = feedback_address(feedback)
         body += "".join(_order_row(n, i, org, to) for n, i in enumerate(order))
+    body += _cover_explain(explainer, link)
     if skim:
         body += _section_label("Skim if you have time", _plural(n_skim, "headline", "headlines"))
         body += _cover_skim(skim, link)
@@ -421,18 +448,19 @@ def _preheader(text) -> str:
 
 def build_html_email(title, themes, *, greeting="", edition_url="", cover=False,
                      preheader="", summary=None, org="", now=None, unsubscribe="",
-                     address="", feedback="", weekly=False) -> str:
+                     address="", feedback="", weekly=False, explainer=None) -> str:
     """The email. `cover=True` builds the short triage cover (see above);
     `summary` (summary.py), `org` (priority.org, for "For <org>:"), the
     footer's `unsubscribe` link and postal `address`, and `feedback` (where
-    "Useful / Not for us" votes go) apply to the cover only. `weekly` titles
-    the cover as the Friday Week in 5 (weekly.py)."""
+    "Useful / Not for us" votes go) and `explainer` (explain.py, "Explain it
+    simply") apply to the cover only. `weekly` titles the cover as the Friday
+    Week in 5 (weekly.py)."""
     now = now or datetime.now(timezone.utc)
     if cover:
         return _cover_email(title, themes, greeting=greeting, edition_url=edition_url,
                             preheader=preheader, summary=summary or [], org=org, now=now,
                             unsubscribe=unsubscribe, address=address, feedback=feedback,
-                            weekly=weekly)
+                            weekly=weekly, explainer=explainer)
     greet_html = f'<div class="greeting">{escape(greeting)}</div>' if greeting else ""
     body = ""
     for theme in themes:

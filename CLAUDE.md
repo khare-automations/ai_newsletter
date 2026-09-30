@@ -27,6 +27,12 @@ render (email + optional web edition).
   the priority profile (`org` + `context`) when priority is on, 3
   `{lead, text, short, ref}` takeaways (`ref` = `{"stories": [..]}` or `{"section": n}`). Off by
   default; [] on failure and the section is hidden.
+- **explain** (`explain.py`): "Explain it simply", an ELI5 box. One Claude call after theming
+  picks the one concept in the reading order a newcomer would most need explained and returns
+  `{concept, steps: [{icon, text}] (3-4), why, ref}` (`ref` = `{"stories": [..]}`), or None when
+  off, nothing qualifies or on failure (section hidden). Web: `#explain` between the reading order
+  and Skim (plus `<script id="edition-explainer">`); cover email: a box after the reading order.
+  Concepts go into `history.json` `recent_explainers` (last 20) as an avoid-list.
 - **images** (`images.py`): after filtering, sets `item.extra["image"]` from the feed's own media
   (RSS `media:content` / enclosures, YouTube thumbnails) or the article's `og:image`. Fails soft per
   item. The same fetch sets `item.extra["minutes"]` (article words / 230 wpm; unset for stubs, and

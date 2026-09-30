@@ -50,6 +50,14 @@ sources:
 # backs it. One extra Claude call; fails soft (no summary) on any error.
 # summary: { enabled: true }
 
+# explain: "Explain it simply", an ELI5 box: Claude picks the one concept in
+# the day's reading order a newcomer would most need explained (RAG, MCP,
+# venture debt, ...) and explains it in 3-4 emoji steps plus a line on why it
+# matters today. Web edition (between the reading order and Skim) and cover
+# email. Concepts from the last 20 editions are not repeated. One extra Claude
+# call; fails soft (no box) on any error or when nothing needs explaining.
+# explain: { enabled: true }
+
 # voice: give your briefing an AI editor persona — entirely yours to invent.
 # When enabled it writes a short daily greeting and names the themes in that
 # voice. `name` signs the greeting; `tone` is the prompt that steers the style

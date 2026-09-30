@@ -9,6 +9,8 @@ Layout (desktop first, works on a phone), built for triage:
 * one numbered reading order: Read first, then Read today, in Claude's rank
   order, each with a read time, the why line, other sources for a cluster, a
   "Mark as read" toggle and (Read first by default) a picture;
+* "Explain it simply" (explain.py): one concept from the day in a few emoji
+  steps, only when an explainer exists;
 * everything else as a skim list per section; tap a headline for its gist.
 
 Without JavaScript the page still reads top to bottom: every gist is open
@@ -116,7 +118,7 @@ _BASE_CSS = css(
 )
 
 _EDITION_CSS = css(
-    "#summary,#order,#skim,.item,.skim-col{scroll-margin-top:64px}"
+    "#summary,#order,#explain,#skim,.item,.skim-col{scroll-margin-top:64px}"
     # Sticky triage bar: jump links on the left, reading progress on the right.
     ".tbar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.95);"
     "-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid $rule}"
@@ -189,6 +191,18 @@ _EDITION_CSS = css(
     ".item-pic img{display:block;width:260px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;"
     "border:1px solid $rule}"
     # Skim.
+    # Explain it simply: one concept as a row of emoji steps (stacked on phones).
+    ".explain{padding:0 0 44px}.explain .h{margin:0 0 16px}"
+    ".steps{list-style:none;margin:0;padding:0;display:grid;"
+    "grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}"
+    ".steps li{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;"
+    "align-items:center;border:2px solid $black;border-radius:4px;padding:14px 16px;"
+    "font:600 15px/1.35 'IBM Plex Sans',sans-serif}"
+    ".steps .ic{font-size:28px;line-height:1}"
+    ".steps .sn{display:block;font:500 11px 'IBM Plex Mono',monospace;color:$orange;letter-spacing:.06em}"
+    ".explain .why-line{margin:14px 0 0;font-size:15px;line-height:1.5;color:$ink}"
+    ".explain .why-line b{color:$cobalt;font-weight:600}"
+    ".explain .jump{padding:4px 0 0}"
     ".skim{padding:0 0 48px}.skim .h{margin:0 0 6px}"
     ".skim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));"
     "gap:8px 36px;align-items:start}"
@@ -336,7 +350,7 @@ def _section_of(themes) -> dict:
     return {id(i): (t.get("tab") or tab_label(t["name"])) for t in themes for i in t["items"]}
 
 
-def _triage_bar(summary, order, n_skim, weekly=False) -> str:
+def _triage_bar(summary, order, n_skim, weekly=False, explainer=None) -> str:
     firsts = [n for n, i in enumerate(order) if i.extra.get("priority") == "first"]
     todays = [n for n, i in enumerate(order) if i.extra.get("priority") == "today"]
     links = []
@@ -350,6 +364,8 @@ def _triage_bar(summary, order, n_skim, weekly=False) -> str:
         links.append(("Read today", str(len(todays)), f"order-{todays[0]}"))
     if order and not firsts and not todays and not weekly:
         links.append(("Reading order", str(len(order)), "order"))
+    if explainer:
+        links.append(("Explain", "", "explain"))
     if n_skim:
         links.append(("Skim", str(n_skim), "skim"))
     tabs = "".join(
@@ -453,6 +469,22 @@ def _order_section(order, themes, org, reading_images, read_key, weekly=False) -
             f'~{minutes} min</span></h2>{rows}</section>')
 
 
+def _explain_section(explainer) -> str:
+    if not explainer or not explainer.get("steps"):
+        return ""
+    steps = "".join(
+        f'<li><span class="ic" aria-hidden="true">{escape(st["icon"])}</span>'
+        f'<span><span class="sn">Step {n}</span>{escape(st["text"])}</span></li>'
+        for n, st in enumerate(explainer["steps"], 1))
+    why = explainer.get("why")
+    why_html = f'<p class="why-line"><b>Why today:</b> {escape(why)}</p>' if why else ""
+    label, target = ref_target(explainer.get("ref"), [])
+    jump = f'<a class="jump go" href="#{target}">→ {escape(label)}</a>' if target else ""
+    return (f'<section class="explain" id="explain"><h2 class="h">Explain it simply'
+            f'<span>{escape(explainer["concept"])}</span></h2>'
+            f'<ol class="steps">{steps}</ol>{why_html}{jump}</section>')
+
+
 def _skim_section(skim, expanded) -> str:
     if not skim:
         return ""
@@ -528,9 +560,10 @@ def _shell(title, page_title, body, extra_css, script, nav_on, top="") -> str:
 def build_web_edition(title, themes, *, greeting="", edition_label="", date_str=None,
                       edition_date=None, slot_key="edition", archive_link="archive.html",
                       summary=None, org="", reading_images="first", skim_expanded=False,
-                      weekly=False) -> str:
+                      weekly=False, explainer=None) -> str:
     """Render the full browsable edition as a self-contained HTML string.
-    `summary` comes from summary.py; `org` names the reader in the why lines;
+    `summary` comes from summary.py; `explainer` from explain.py (None = no
+    "Explain it simply" section); `org` names the reader in the why lines;
     `reading_images` is first|all|none (which reading-order stories get a
     picture); `skim_expanded` opens every skim gist by default; `weekly`
     titles it as the Friday Week in 5 (weekly.py)."""
@@ -555,6 +588,7 @@ def build_web_edition(title, themes, *, greeting="", edition_label="", date_str=
     body = (f'<div class="wrap">{dateline}{greet_html}'
             f'{_summary_section(summary, order, skim, org, weekly)}'
             f'{_order_section(order, themes, org, reading_images, read_key, weekly)}'
+            f'{_explain_section(explainer)}'
             f'{_skim_section(skim, skim_expanded)}'
             f'<a class="acta" href="archive.html"><span><span class="k">Looking for something older?</span>'
             f'<span class="l">Search every story {escape(title)} has sent, by topic, priority or source.'
@@ -562,11 +596,13 @@ def build_web_edition(title, themes, *, greeting="", edition_label="", date_str=
     data = (f'<script id="edition-data" type="application/json">'
             f'{_json_for_html(_edition_data(themes, edition_date, slot_key))}</script>'
             f'<script id="edition-summary" type="application/json">'
-            f'{_json_for_html([{"lead": x["lead"], "text": x["text"]} for x in summary])}</script>')
+            f'{_json_for_html([{"lead": x["lead"], "text": x["text"]} for x in summary])}</script>'
+            + (f'<script id="edition-explainer" type="application/json">'
+               f'{_json_for_html(explainer)}</script>' if explainer else ""))
     script = data + f"<script>{_EDITION_JS}</script>"
     page_title = f"{title} — {edition_label}" if edition_label else title
     return _shell(title, page_title, body, _EDITION_CSS, script, "today",
-                  top=_triage_bar(summary, order, n_skim, weekly))
+                  top=_triage_bar(summary, order, n_skim, weekly, explainer))
 
 
 def save_edition(out_dir, html, date_str, slot_key) -> dict:

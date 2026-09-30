@@ -263,3 +263,30 @@ def test_backup_run_skips_when_today_already_went_out(tmp_path):
         assert sent == {}
         run(cfg, history_path=str(tmp_path / "h.json"), now=datetime(2026, 9, 25, 7, 15), only_if_unsent=True)
     assert sent and save.call_args[0][1]["last_sent"] == "2026-09-25"
+
+EXPLAINER = {"concept": "MCP", "why": "w", "ref": {"stories": [1]},
+             "steps": [{"icon": "📦", "text": "One"}, {"icon": "🔌", "text": "Two"},
+                       {"icon": "🤖", "text": "Three"}]}
+
+def test_explainer_is_rendered_and_remembered(tmp_path):
+    cfg = _sched_cfg(tmp_path, explain={"enabled": True})
+    sent = {}
+    hist = {"seen_ids": [], "recent_explainers": [f"C{n}" for n in range(20)]}
+    stack, save = _quick_patches(tmp_path, sent, hist=hist)
+    with stack, patch("briefing.pipeline.explain", return_value=EXPLAINER) as ex:
+        run(cfg, history_path=str(tmp_path / "h.json"), now=datetime(2026, 9, 24, 6, 13))
+    assert ex.call_args[0][1] == {"enabled": True}
+    assert ex.call_args.kwargs["recent"] == [f"C{n}" for n in range(20)]
+    assert "Explain it simply" in sent["html"]
+    assert 'id="explain"' in (tmp_path / "docs" / "index.html").read_text()
+    remembered = save.call_args[0][1]["recent_explainers"]
+    assert len(remembered) == 20 and remembered[-1] == "MCP" and "C0" not in remembered
+
+def test_preview_does_not_remember_the_explainer(tmp_path):
+    sent = {}
+    stack, save = _quick_patches(tmp_path, sent)
+    with stack, patch("briefing.pipeline.explain", return_value=EXPLAINER):
+        run(_sched_cfg(tmp_path), history_path=str(tmp_path / "h.json"),
+            now=datetime(2026, 9, 24, 6, 13), preview=True)
+    assert "Explain it simply" in sent["html"]
+    save.assert_not_called()

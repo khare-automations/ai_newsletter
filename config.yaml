@@ -109,6 +109,10 @@ priority:
 # "The day in 30 seconds": three takeaways at the top of the email and web edition.
 summary: { enabled: true }
 
+# "Explain it simply": one concept from the day's stories (RAG, MCP, venture
+# debt, ...) in 3-4 emoji steps, for readers new to it. After the reading order.
+explain: { enabled: true }
+
 # Preview images: each story's og:image (what link previews show), hotlinked.
 images: { enabled: true }
 
