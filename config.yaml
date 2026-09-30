@@ -37,6 +37,7 @@ sources:
   - { type: rss, name: "LangChain Blog",   url: "https://blog.langchain.com/rss.xml" }
   - { type: rss, name: "Hugging Face Blog", url: "https://huggingface.co/blog/feed.xml" }
   - { type: rss, name: "OpenAI News",      url: "https://openai.com/news/rss.xml" }
+  - { type: rss, name: "DEV (AI)",         url: "https://dev.to/feed/tag/ai" }
 
   # ── AI in finance, fintech & European startups ──
   # - { type: rss, name: "The FinTech Blueprint", url: "https://lex.substack.com/feed" }  # Substack blocks GitHub's servers, relays too; no mirror feed. Try claude_fetch if wanted.
