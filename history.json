@@ -155,6 +155,7 @@
     "10268d8f3e012587adbc56a7c81517b64a2771ba",
     "1036b2f436594474c1f71b26a2187e95f539ce35",
     "1037e7f0b693becdf454a04ffe4ab008f6c5cb00",
+    "1063d2137343d80965ed56c564a2686143e28184",
     "107cef8bbd02e0d28243bb0134ac6a684651412b",
     "10889c1a8ecceea617fe8c85c8b1d03d6cd806b8",
     "109402ad3903d07f5f46dc7d57917e00156620e1",
@@ -1369,6 +1370,7 @@
     "9ccab1c2f3c4745d9af72209f7ab251c654126f6",
     "9ccf8665576aaeb34c4174fe4111500790f3cb1d",
     "9cd25752ae6f66755f9be0bba17ccc814945e37c",
+    "9cdcaec08381dc10d8a5e3449ee8479608fb26d8",
     "9cf704a22e8a351f9f9b8e6895fb1560e6999475",
     "9cfe4900b01eb001c542e4586301fb5e30e642d2",
     "9d02eeb8cef10808bb224046e0ec327197d56b1e",
@@ -1777,6 +1779,7 @@
     "cbc87ae398450e54f544ddf1560668c3e0680b4c",
     "cbdf091a9a6aabb1e108c3575d6d2ce6439f3a93",
     "cc05ac16644f28fcc5ca3aba464961627c1f771c",
+    "cc2763521cf0f4fda7ddffc28a5752cd5e610015",
     "cc3f1f87607f74a7f40438ce1c73e6ea91ac5c96",
     "cc44e5241576c59afa2e2ec764abd696de0023d2",
     "cc703622996e9dc4faae8e08269c95ebdcd9a780",
@@ -1934,6 +1937,7 @@
     "ddfb3efb0519c4fc614fadeb139dec665d2a627f",
     "de47a5c0e7ba961501519562d9b6a8c49ad82333",
     "de4cf53f9db96311cdf47867a4e06ac73ec122a0",
+    "de5cd1a6d51dc917ab910942b7b9fe70d73cd78c",
     "de5ea3a79f40bdda53dae19228fbde1086c74662",
     "de79dffdd42d23962eb958bf273db7697eaa7a9f",
     "de9bdc9d72014df62c16befea3343b4e085f2f1a",
@@ -2524,6 +2528,7 @@
     "title::axiology joins europe s push to bring central bank money to digital capital markets",
     "title::aztec group on the judgment of technology",
     "title::backburner turns your iphone into a mac s ai co processor 44 faster",
+    "title::backed by nvidia and a16z black forest labs sets its sights on world models",
     "title::backplane lets ai agents directly edit pcb and cad hardware designs",
     "title::baidu drops ernie 5 5 flash a raw 280b open checkpoint beating deepseek",
     "title::baidu open sources unlimited ocr 2 to parse hundred page documents at once",
@@ -2824,6 +2829,7 @@
     "title::edge0 s audio8 clones any voice across 23 languages with just 600m parameters",
     "title::edge0 ships audio8 asr infinite to transcribe speech for hours straight",
     "title::edonia raises 15m to scale microalgae protein as an alternative to meat",
+    "title::eileen burbidge backs monzo alums anti fraud startup in 1 8m pre seed",
     "title::einstein s university has three lessons to teach europe",
     "title::eit launches 40m funding call to help bring university deep tech research to market",
     "title::elevenlabs doubles valuation to 22bn with tender offer",
@@ -3190,6 +3196,7 @@
     "title::how sumitomo life s leaders helped teams adopt chatgpt enterprise",
     "title::how third moment research runs 10 000 agents for 36 hours",
     "title::how to bounce back from losing your dream job",
+    "title::how to build a knowledge factory for ai agents",
     "title::how to build a model router in the harness",
     "title::how to build an investment thesis and win early stage deals according to vcs",
     "title::how to build evidence grounded agent memory with openwiki and graphs",
@@ -4427,58 +4434,6 @@
   ],
   "recent_order": [
     {
-      "date": "2026-11-18",
-      "title": "8 key findings from Atomico\u2019s State of European Tech report"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Anthropic\u2019s $1.4tn IPO puts Europe\u2019s AI boom to the test"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Introducing GPT-6.2 Astra and Sol"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Microsoft Launches Seven MAI Models to Undercut GPT and Claude Costs"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Google's Gemini Tasks Makes Calls, Shops, and Runs 60 Apps for Free"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Vals AI Catches Claude Opus 5.5 Targeting Civilians in Drone Tests"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Epoch's Benchmark Catches Fable 5.2 and GPT-6.2 Astra Failing Real Work"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Hybrid Reasoning Agents: Which Monitor Still Works"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Protect sensitive data in your traces: new controls in LangSmith"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "How to Choose the Right Sandbox for AI Agents"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "What We\u2019ve Learned Building Proactive Agents"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Swiss Banking Trade Association Calls for Regulatory Push on Domestic Stablecoins"
-    },
-    {
-      "date": "2026-11-18",
-      "title": "Microsoft's Copilot SDK 2.0 Runs 95x Faster by Ditching Containers for Rust"
-    },
-    {
       "date": "2026-11-19",
       "title": "MIT Researchers Show Wrong AI Thresholds Quadruple Insurance Tail Risk"
     },
@@ -4537,11 +4492,18 @@
     {
       "date": "2026-11-20",
       "title": "Plural raises fresh \u20ac1bn fund to back \u2018non-obvious companies\u2019"
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Backed by Nvidia and a16z, Black Forest Labs sets its sights on world models"
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Eileen Burbidge backs Monzo alums\u2019 anti-fraud startup in \u00a31.8m pre-seed"
     }
   ],
-  "last_sent": "2026-11-20",
+  "last_sent": "2026-11-23",
   "recent_explainers": [
-    "AI Agent Harness",
     "Context Window",
     "S-1 Filing",
     "Human-in-the-loop",
@@ -4560,6 +4522,7 @@
     "AI Alignment",
     "Sandbox",
     "Classification Threshold",
-    "Tail Risk"
+    "Tail Risk",
+    "World Models"
   ]
 }
